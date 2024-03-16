@@ -1,0 +1,204 @@
+﻿@page "/reporte"
+@inject IReporteService ReporteService
+@inject IJSRuntime JS
+@inject SweetAlertService Swal
+@using BlazorBootstrap
+@using BlazorStrap;
+@using BlazorStrap.V5
+@using CurrieTechnologies.Razor.SweetAlert2
+@using DTOs;
+@using LaboratorioBlazorUI.Helpers;
+@using LaboratorioBlazorUI.Servicios
+
+@using System.Drawing
+@using global::DTOs
+
+
+<div class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 mt-3 bg-white"
+             style="border-radius: 20px">
+            <div class="container">
+                <h3 class="text-center text-uppercase mt-2 mb-2"
+                    style="
+                                font-family: 'Courier New', Courier, monospace;
+                                font-weight: 600;
+                            ">
+                    Reportes de ventas
+                </h3>
+
+
+                <BSContainer>
+                    <BSRow>
+                        <BSCol Column="4"><span class="input-group-text">Filtrado por fecha</span></BSCol>
+                        <BSCol Column="4">
+                            <BSLabel>Fecha inicial</BSLabel>
+                            <BSInput InputType="InputType.Date" placeholder="FechaInicial" ValueChanged="async (DateTime? e) => await FiltrarFechaInicial(e)" UpdateOnInput="true" Value="_filtroFechaInicial" />
+                        </BSCol>
+                        <BSCol Column="4">
+                            <BSLabel>Fecha final</BSLabel>
+                            <BSInput InputType="InputType.Date" placeholder="FechaFinal" ValueChanged="async (DateTime? e) => await FiltrarFechaFinal(e)" UpdateOnInput="true" Value="_filtroFechaFinal" />
+                        </BSCol>
+                    </BSRow>
+                </BSContainer>
+
+                <BSDataTable FetchItems="ObtenerResumenAlmacen" IsStriped="true" PaginationBottom="true" StartPage="_startPage" RowsPerPage="20" Context="item" @ref="_tableRef">
+                    <Header>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.idRecibo))">Numero Recibo</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.nombreCajero))">Cajero</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.nombreCliente))">Cliente</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.total))">Total venta</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.estado))">Estado Recibo</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO" Column="@(nameof(ReciboDTO.fecha))">Fecha</BSDataTableHead>
+                        <BSDataTableHead TValue="ReciboDTO"></BSDataTableHead>
+
+                    </Header>
+                    <Body>
+                        <BSDataTableRow Color="BSColor.Secondary">
+                            <BSTD>
+                                @item.idRecibo
+                            </BSTD>
+                            <BSTD>
+                                @item.nombreCajero
+                            </BSTD>
+                            <BSTD>
+                                @item.nombreCliente
+                            </BSTD>
+                            <BSTD>
+                                @item.total
+                            </BSTD>
+                            <BSTD>
+                                @item.estado
+                            </BSTD>
+                            <BSTD>
+                                @item.fecha
+                            </BSTD>
+                        </BSDataTableRow>
+                    </Body>
+                </BSDataTable>
+
+
+
+                <Button Color="ButtonColor.Success" @onclick="() => ExportarExcel()">Guardar reporte Excel</Button>
+                <br/>
+                <br/>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    ReporteDTO reporte;
+    private IEnumerable<ReciboDTO> recibos = default;
+    private Button saveButton;
+
+    int _startPage = 1;
+
+    private DateTime? _filtroFechaInicial = null;
+    private DateTime? _filtroFechaFinal = null;
+
+    private BSDataTable<ReciboDTO> _tableRef = new BSDataTable<ReciboDTO>();
+
+    private async Task<(IEnumerable<ReciboDTO>, int)> ObtenerResumenAlmacen(DataRequest dataRequest)
+    {
+
+        if (dataRequest.Page < 1)
+        {
+            dataRequest.Page = 1;
+        }
+        var fechaInicial = _filtroFechaInicial;
+        var fechaFinal = _filtroFechaFinal;
+
+        if (fechaFinal == null)
+        {
+            fechaFinal = DateTime.Now;
+        }
+
+        if (fechaInicial == null)
+        {
+            fechaInicial = DateTime.MinValue;
+        }
+
+        DateTime fechaInicioParaFormatear = DateTime.MinValue;
+        DateTime fechaFinalParaFormatear = DateTime.MinValue;
+
+        fechaInicioParaFormatear = (DateTime)fechaInicial!;
+
+        fechaFinalParaFormatear = (DateTime)fechaFinal;
+
+
+        string fechaInicioFormateada = fechaInicioParaFormatear.ToString("MM-dd-yyyy");
+        string fechaFinalFormateada = fechaFinalParaFormatear.ToString("MM-dd-yyyy");
+
+
+        var respuesta = await ReporteService.ObtenerReporte(fechaInicioFormateada, fechaFinalFormateada);
+
+        reporte = respuesta;
+        recibos = reporte.recibos;
+
+        var count = recibos.Count();
+
+        return (recibos, count);
+    }
+
+    private async Task FiltrarFechaInicial(DateTime? e)
+    {
+        _filtroFechaInicial = e;
+        await _tableRef.Refresh();
+    }
+    private async Task FiltrarFechaFinal(DateTime? e)
+    {
+        _filtroFechaFinal = e;
+        await _tableRef.Refresh();
+    }
+
+
+
+    private async Task ExportarExcel()
+    {
+     /*   ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        using (var package = new ExcelPackage())
+        {
+            var worksheet = package.Workbook.Worksheets.Add("recibos");
+
+
+
+            var recibosParaExcel = recibos.Select(a => new
+            {
+                Numero_Recibo = a.idRecibo,
+                Nombre_Cajero = a.nombreCajero,
+                Nombre_Cliente = a.nombreCliente,
+                Total = a.total,
+                Estado = a.estado,
+                Fecha = a.fecha.ToString("dd-MM-yyyy")
+             });
+
+            var tableBody = worksheet.Cells["A1:A1"].LoadFromCollection(recibosParaExcel, true);
+
+            var header = worksheet.Cells["A1:B1"];
+            worksheet.DefaultColWidth = 25;
+            tableBody.Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+            tableBody.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            tableBody.Style.Fill.BackgroundColor.SetColor(Color.WhiteSmoke);
+            tableBody.Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            header.Style.Font.Bold = true;
+            header.Style.Font.Color.SetColor(Color.White);
+            header.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            header.Style.Fill.BackgroundColor.SetColor(Color.DarkBlue);
+
+            JS.GuardarComo($"Reporte{DateTime.Now.ToString()}.xlsx", package.GetAsByteArray());
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Operacion exitosa",
+                    Color = "Green",
+                    Html = $"<strong>Se descargo el reporte en formato Excel correctamente</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Success,
+                    Timer = 2000
+                });
+        }*/
+    }
+}

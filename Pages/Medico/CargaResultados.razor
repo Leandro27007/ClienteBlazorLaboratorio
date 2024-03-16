@@ -1,0 +1,49 @@
+﻿@page "/resultadoSubida"
+
+
+@using BlazorStrap
+@using BlazorStrap.V5
+
+
+<h3>CargaResultados</h3>
+
+
+
+<div>
+    <InputFile multiple OnChange="OnChange"/>
+</div>
+
+<div>
+    @foreach (var item in archivosBase64)
+    {
+     <img src="@item"/>   
+    }
+</div>
+
+<!--<iframe src="https://pub-bb695d5f0667442a887cb27931ea5d88.r2.dev/coprologico%20con%20imagen%20(1).pdf" style="width: 800px; height:  600px;" frameborder="0"></iframe>-->
+
+
+@code {
+    private const int tamañoMaximoArchivo = 2 * 1024 * 1027;
+    private List<string> archivosBase64 = new List<string>();
+
+
+    async Task OnChange(InputFileChangeEventArgs e)
+    {
+
+      foreach (var item in e.GetMultipleFiles())
+              {
+                  using var stream = item.OpenReadStream(tamañoMaximoArchivo);
+                  using var ms = new MemoryStream();
+                  await stream.CopyToAsync(ms);
+
+              }
+
+    
+     
+    }
+
+
+
+
+}

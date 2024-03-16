@@ -1,0 +1,14 @@
+﻿﻿@using LaboratorioBlazorUI.Auth;
+
+@page "/logout"
+
+@inject ILoginServices loginService
+@inject NavigationManager nav
+
+@code {
+    protected async override Task OnInitializedAsync()
+    {
+        await loginService.Logout();
+        nav.NavigateTo("");
+    }
+}

@@ -1,0 +1,149 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager NavManager
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Laboratorio Sistema</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <AuthorizeView Roles="Administrador">
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="mantenedorUsuario" Match="NavLinkMatch.All">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-users-line"></i></span> Usuarios
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="mantenedorPruebaLab">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-microscope"></i></span> Pruebas Lab
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="menuSeleccionPruebas">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-hand-point-up"></i></span> Seleccion Pruebas
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="menuMedicoAtender">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Pacientes
+                </NavLink>
+            </div>
+
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="resultadoSubida">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Subir Resultados
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="menuFacturacion">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-cash-register"></i></span> Facturacion
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="reembolso">
+                    <span class="" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span> Reembolso
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="reporte">
+                    <span class="oi oi-document" aria-hidden="true"></span> Reportes
+                </NavLink>
+            </div>
+
+
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Usuario">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="menuSeleccionPruebas">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-hand-point-up"></i></span> Seleccion Pruebas
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Medico">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="menuMedicoAtender">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Pacientes
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="resultadoSubida">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Subir Resultados
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="resultadoSubida">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Subir Resultados
+                    </NavLink>
+                </div>
+
+            </Authorized>
+        </AuthorizeView>
+
+
+        <AuthorizeView Roles="Cajero">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="menuFacturacion">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-cash-register"></i></span> Facturacion
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="resultadoSubida">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-user-doctor"></i></span> Subir Resultados
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="reembolso">
+                        <span class="" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span> Reembolso
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+}

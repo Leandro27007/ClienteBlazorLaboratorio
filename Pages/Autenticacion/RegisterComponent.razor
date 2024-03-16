@@ -1,0 +1,93 @@
+﻿@using BlazorStrap
+@using BlazorStrap.V5
+@using CurrieTechnologies.Razor.SweetAlert2
+@using LaboratorioBlazorUI.AlertasSweet
+@using LaboratorioBlazorUI.Auth
+@using LaboratorioBlazorUI.Auth.AuthModels
+@using System.Text.Json
+@using LaboratorioBlazorUI.DTOs
+@inject HttpClient http
+@inject ILoginServices loginService
+@inject NavigationManager nav
+@inject Alertas _swal;
+
+
+<BSForm IsRow="true" Gutters="Gutters.Medium" Model="usuarioRegister" OnValidSubmit="@CrearUsuario">
+    <DataAnnotationsValidator />
+
+    <BSCol Column="auto" MarginLeftAndRight="Margins.ExtraLarge">
+
+        <BSLabel>Nombre</BSLabel>
+        <BSInput InputType="InputType.Text" @bind-Value="usuarioRegister.Nombre" />
+        <ValidationMessage For="@(() => usuarioRegister.Nombre)" />
+
+        <BSLabel>Apellido</BSLabel>
+        <BSInput InputType="InputType.Text" @bind-Value="usuarioRegister.Apellido" />
+        <ValidationMessage For="@(() => usuarioRegister.Apellido)" />
+
+
+        <BSLabel>Celular</BSLabel>
+        <BSInput InputType="InputType.Text" @bind-Value="usuarioRegister.Telefono" />
+        <ValidationMessage For="@(() => usuarioRegister.Telefono)" />
+
+
+         <BSButton MarginTop="Margins.Medium" Color="BSColor.Success" IsSubmit="true">Registrar</BSButton>
+       
+    </BSCol>
+    <BSCol Column="auto" MarginLeftAndRight="Margins.ExtraLarge">
+
+        <BSLabel>Nombre De Usuario</BSLabel>
+        <BSInput InputType="InputType.Text" @bind-Value="usuarioRegister.UserName" />
+        <ValidationMessage For="@(() => usuarioRegister.UserName)" />
+
+        <BSLabel>Contraseña</BSLabel>
+        <BSInput InputType="InputType.Password" @bind-Value="usuarioRegister.Password" />
+        <ValidationMessage For="@(() => usuarioRegister.Password)" />
+
+
+        <BSLabel>Role</BSLabel>
+        <InputSelect id="department" @bind-Value="usuarioRegister.Role" class="form-control">
+            <option value="">Seleccione un role</option>
+            <option value="@Roles.CAJERO">@Roles.CAJERO</option>
+            <option value="@Roles.ADMINISTRADOR">@Roles.ADMINISTRADOR</option>
+        </InputSelect>
+
+        <br />
+
+
+    </BSCol>
+
+
+</BSForm>
+
+
+
+@code {
+    private UsuarioRegister usuarioRegister = new UsuarioRegister();
+
+    [Parameter]
+    public EventCallback notificarCreacion { get; set; }
+
+
+    private async Task CrearUsuario()
+    {
+
+        var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+        var result = await http.PostAsJsonAsync("Autenticacion/CrearUsuario", usuarioRegister);
+        var content = await result.Content.ReadAsStringAsync();
+
+        var resultado = JsonSerializer.Deserialize<RespuestaDTO<UserToken>>(content, options);
+
+        if (resultado.Contenido == null)
+            return;
+
+        await _swal.Alerta(titulo: "Registro de Usuario", mensaje: "Se creo el usuario de manera exitosa", icono: SweetAlertIcon.Success);
+
+        await notificarCreacion.InvokeAsync();
+    }
+
+}

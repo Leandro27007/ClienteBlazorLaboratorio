@@ -1,0 +1,277 @@
+﻿@page "/menuSeleccionPruebas"
+@using System.Text.RegularExpressions;
+@using CurrieTechnologies.Razor.SweetAlert2
+@using LaboratorioBlazorUI.Modelos
+@using LaboratorioBlazorUI.Servicios
+@using Microsoft.AspNetCore.Components.Authorization;
+@using LaboratorioBlazorUI.Modelos.Request;
+@using static LaboratorioBlazorUI.Modelos.Request.GenerarTurnoRequest;
+
+@inject IPruebaLabService pruebaLabServices;
+@inject ITurnoServices turnoServices;
+@inject SweetAlertService Swal;
+
+<body class="text-black" style="width: 100%; height: 600px;border-radius: 10px ; background-color: white">
+    <header>
+        <h1 class="text-center mb-3 mt-3 text-uppercase"
+            style="font-family: 'Courier New', Courier, monospace">
+            Pruebas y Servicios disponibles
+        </h1>
+    </header>
+    <div class="container">
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h4 class="text-center mb-3"
+                    style="
+                            font-family: 'Franklin Gothic Medium',
+                                'Arial Narrow', Arial, sans-serif;
+                        ">
+                    Seleccione la(s) prueba(s) que desea adquirir
+                </h4>
+                <div class="container" style="font-size: 25px">
+                    <div class="row">
+
+
+                        @if (PruebasParaMostrar != null)
+                        {
+                            <!--Espero una ( List<List<Entity>> List ) En el blucle interior recorro la lista interna y pinto lis elementos-->
+                            @foreach (var itemList in PruebasParaMostrar)
+                            {
+                                <div class="col-6" style="min-height: 360px;">
+                                    @foreach (var item in itemList)
+                                    {
+                                        <div style="margin-bottom: 5px;">
+                                            <label for="@item.nombrePrueba" class="btn text-white text-uppercase text-start" style="background-color: #052B67; width:200px">
+                                                <input type="checkbox" @bind="item.isChecked" name="@item.idPruebaLab" id="@item.nombrePrueba"
+                                                @onclick="() => AgregarItem(id:item.idPruebaLab, nombrePrueba: item.nombrePrueba, precio:item.precio)" />
+                                                @item.nombrePrueba.ToString()
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-evenly mt-4">
+
+                                <input class="btn btn-lg btn-danger mb-2 mt-2"
+                                @onclick="LimpiarItems"
+                                       type="button"
+                                       value="Borrar selección" />
+
+
+                                <input class="btn btn-lg btn-success mb-2 mt-2"
+                                @onclick="GenerarTurno"
+                                       type="button"
+                                       disabled=@estaCargando
+                                       value="Generar Ticket" />
+                            </div>
+
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 rounded" style="background-color:#162d43ff;">
+                <div>
+                    <h4 class="text-center mb-3 text-white"
+                        style="
+                                font-family: 'Franklin Gothic Medium',
+                                    'Arial Narrow', Arial, sans-serif;
+                            ">
+                        Pruebas Seleccionadas
+                    </h4>
+                </div>
+                <div style="min-height: 350px; ">
+                    <table class="table text-white">
+                        <thead>
+                            <tr>
+                                <th scope="col">Prueba</th>
+                                <th scope="col">Precio $</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (PruebasSeleccionadas.Count() > 0)
+                            {
+                                @foreach (var item in PruebasSeleccionadas)
+                                {
+                                    <tr>
+                                        <td>@item.nombrePrueba</td>
+                                        <td>$@item.precio</td>
+                                    </tr>
+                                }
+
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+                
+
+                <div class="alert alert-primary d-flex align-content-end" style="height: 58px;">
+                    <p><strong>TOTAL</strong></p>
+                    <p class="text-success"><strong>$@Total</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+                 integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+                 crossorigin="anonymous"></script>
+
+    -->
+</body>
+
+
+@code
+{
+    List<List<PruebaLab>> PruebasParaMostrar = null;
+    decimal? Total = 0.0m;
+    List<PruebaLab> PruebasSeleccionadas = new List<PruebaLab>();
+    bool estaCargando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var pruebasLab = await pruebaLabServices.ObtenerPruebas();
+
+            if (pruebasLab != null)
+            {
+
+                //Mando a dividir la lista en dos listas mas pequenas
+                var listasDeListaPruebas = DivirdirListaPruebas(pruebasLab);
+                PruebasParaMostrar = listasDeListaPruebas;
+            }
+        }
+        catch (Exception ex)
+        {
+
+            //  await App.Current.MainPage.DisplayAlert("Oops", $"Ocurrio un error al cargar los datos de la api. ERRORCODE:{ex.Message}", "Ok");
+         
+           await Swal.FireAsync("Error", "Ocurrio un error al obtener las pruebas", SweetAlertIcon.Error);
+        }
+    }
+
+
+    private async Task GenerarTurno()
+    {
+        if (PruebasSeleccionadas.Count > 0)
+        {
+            try
+            {
+
+                estaCargando = true;
+                var resultado = await turnoServices.GenerarTurno(new GenerarTurnoRequest()
+                    {
+                        pruebasLab = PruebasSeleccionadas.Select(p => new PruebalabTurnoRequest()
+                        {
+                            idPruebaLab = p.idPruebaLab
+                        }).ToList()
+                    });
+
+                var alerta = await Swal.FireAsync(new SweetAlertOptions()
+                    {
+                        Title = "Ticket Generado",
+                        Color = "Darkblue",
+                        Html = $"<strong>{resultado}</strong>",
+                        Footer = "Imprimiendo Ticket",
+                        Icon = SweetAlertIcon.Success,
+                        ShowConfirmButton = false,
+                        Timer = 3500
+                    });
+
+                estaCargando = false;
+                await LimpiarItems();
+            }
+            catch (Exception ex)
+            {
+
+                await Swal.FireAsync(new SweetAlertOptions()
+                    {
+                        Title = "Error",
+                        Html = $"<strong>{ex.Message}</strong>",
+                        Icon = SweetAlertIcon.Error,
+                        ShowConfirmButton = true,
+                        Timer = 10000
+                    });
+
+                estaCargando = false;
+                await LimpiarItems();
+            }
+
+            return;
+        }
+
+        // await App.Current.MainPage.DisplayAlert("Oops", $"Debes seleccionar al menos un servicio", "Ok");
+    }
+
+    private void AgregarItem(int id, string nombrePrueba, decimal? precio)
+    {
+        if (true)
+        {
+
+        }
+        PruebaLab item = PruebasSeleccionadas.FirstOrDefault(d => d.idPruebaLab == id);
+
+        if (item == null)
+        {
+            PruebasSeleccionadas.Add(new()
+                {
+                    idPruebaLab = id,
+                    nombrePrueba = nombrePrueba,
+                    precio = precio
+                });
+
+        }
+        else
+        {
+            QuitarItem(item);
+        }
+
+        Total = PruebasSeleccionadas.Select(ps => ps.precio).Sum();
+    }
+
+    private void QuitarItem(PruebaLab item)
+    {
+        PruebasSeleccionadas.Remove(item);
+    }
+
+    private Task LimpiarItems()
+    {
+        PruebasSeleccionadas = new();
+
+        foreach (var items in PruebasParaMostrar)
+        {
+            foreach (var item in items)
+            {
+                if (item.isChecked == true)
+                {
+                    item.isChecked = false;
+                }
+            }
+        }
+
+        Total = 0.0m;
+
+        return Task.CompletedTask;
+    }
+
+
+    private List<List<PruebaLab>> DivirdirListaPruebas(IEnumerable<PruebaLab> pruebas)
+    {
+        int mitadLongitud = pruebas.Count() / 2;
+
+        var lista1 = pruebas.Take(mitadLongitud).ToList();
+        var lista2 = pruebas.Skip(mitadLongitud).Take((pruebas.Count() - mitadLongitud)).ToList();
+
+        List<List<PruebaLab>> listaDeListaPruebas = new List<List<PruebaLab>>();
+
+        listaDeListaPruebas.Add(lista2);
+        listaDeListaPruebas.Add(lista1);
+
+        return listaDeListaPruebas;
+    }
+}

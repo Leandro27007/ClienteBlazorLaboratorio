@@ -1,0 +1,125 @@
+﻿ ﻿@using BlazorStrap;
+@using BlazorStrap.V5
+@using CurrieTechnologies.Razor.SweetAlert2
+@using LaboratorioBlazorUI.AlertasSweet
+@using LaboratorioBlazorUI.Auth;
+@using LaboratorioBlazorUI.Auth.AuthModels;
+@using System.Text.Json;
+@using LaboratorioBlazorUI.DTOs;
+@using LaboratorioBlazorUI.Modelos.Response
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject HttpClient http
+@inject ILoginServices loginService
+@inject NavigationManager nav
+@inject Alertas _swal;
+
+
+
+    <div class="contenedor">
+        <div class="parte-izquierda">
+            <label class="label">Laboratorio Sistema</label>
+        </div>
+        <div class="formulario">
+            <h1>LOGIN</h1>
+        <EditForm Model="usuarioLogin" OnValidSubmit="@IniciarSesion">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <ValidationSummary></ValidationSummary>
+                <div class="usuario">
+                <InputText type="text" required @bind-Value="usuarioLogin.UserName" />
+                    <label>Nombre de usuario</label>
+                </div>
+                <div class="usuario">
+                <InputText type="password" required @bind-Value="usuarioLogin.Password" />
+                    <label>Contraseña</label>
+                </div>
+            <div class="pt-4">
+                <input type="submit" disabled="@isLoading" value="Entrar">
+                @if (isLoading)
+                {
+                    <BSSpinner Color="BSColor.Primary" />
+                }
+                else
+                {
+                    @if (mensajeError != null)
+                    {
+                        <div style="color:red">@mensajeError</div>
+                    }
+                }
+
+
+            </div>
+            </EditForm>
+        </div>
+    </div>
+
+
+
+
+@code {
+
+    [CascadingParameter] protected Task<AuthenticationState> AuthState { get; set; }
+    private UsuarioLogin usuarioLogin = new UsuarioLogin();
+    string mensajeError = null;
+    private bool isLoading = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+
+        base.OnInitialized();
+        var user = (await AuthState).User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            nav.NavigateTo("");
+        }
+
+    }
+
+
+    private async Task IniciarSesion()
+    {
+
+        var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await http.PostAsJsonAsync("Autenticacion/Login", usuarioLogin); 
+            var content = await result.Content.ReadAsStringAsync();
+
+            var resultado = JsonSerializer.Deserialize<LoginResponse>(content, options);
+
+            Console.WriteLine("Despues de resultado");
+
+            if (!string.IsNullOrEmpty(resultado.Message))
+            {
+                mensajeError = resultado.Message;
+                isLoading = false;
+                return;
+            }
+
+            await loginService.Login(resultado.Token);
+
+            isLoading = false;
+
+            await _swal.Alerta(titulo: "Log-In", mensaje: "Iniciando sesion", icono: SweetAlertIcon.Success);
+
+            nav.NavigateTo("");
+        }
+        catch (Exception ex)
+        {
+
+            await _swal.Alerta(titulo: "Log-In", mensaje: $"{ex.Message}", icono: SweetAlertIcon.Error);
+            isLoading = false;
+        }
+
+    }
+
+}
+

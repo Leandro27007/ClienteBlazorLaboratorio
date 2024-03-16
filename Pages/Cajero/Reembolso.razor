@@ -1,0 +1,233 @@
+﻿@page "/reembolso"
+@using CurrieTechnologies.Razor.SweetAlert2
+@using DTOs;
+@using LaboratorioBlazorUI.Modelos.Request;
+@using LaboratorioBlazorUI.Servicios
+@using global::DTOs
+@inject IReciboService reciboService
+@inject SweetAlertService Swal
+
+<div class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-sm-12 col-md-10 col-lg-10 col-xl-10 mt-3 bg-white"
+             style="border-radius: 20px">
+            <div class="container">
+                <h3 class="text-center text-uppercase mt-2 mb-2"
+                    style="
+                                font-family: 'Courier New', Courier, monospace;
+                                font-weight: 600;
+                            ">
+                    Cancelacion de recibos
+                </h3>
+
+                <div class="d-flex mt-2 mb-3">
+                    <label class="mx-2 mt-1" for="idrecibo"><strong>Numero de recibo:</strong></label>
+                    <EditForm Model=@reciboBusqueda OnValidSubmit="BuscarRecibo">
+                        <DataAnnotationsValidator />
+                        <div class="form-group">
+                            <InputText @bind-Value=reciboBusqueda.NumeroRecibo class="form-control mx-2 mt-1" id="Name" />
+                            <br />
+                            <input class="btn btn-primary btn-sm mx-2"
+                                   type="submit"
+                                   value="Buscar" />
+                        </div>
+                    </EditForm>
+
+
+                </div>
+
+                @if (reciboSeleccionado != null)
+                {
+                    <div class="container mt-5">
+
+                        <label class="mb-1"><strong>Información de recibo:</strong></label>
+                        <div class="row border">
+                            <div class="col-sm-5 col-md-5 col-lg-5 col-xl-5 mt-4">
+                                <p><strong>ID:</strong> @reciboSeleccionado.idRecibo!</p>
+                                <p><strong>Nombre:</strong> @reciboSeleccionado.nombreCliente</p>
+                                <p><strong>Cajero:</strong> @reciboSeleccionado.nombreCajero</p>
+                                <p><strong>Estado:</strong> @reciboSeleccionado.estado</p>
+                            </div>
+
+                            <div class="col-sm-7 col-md-7 col-lg-7 col-xl-7">
+                                <table class="table border mt-2"
+                                       style="
+                                    display: block;
+                                    min-height: 200px;
+                                    height: 200px;
+                                    overflow-y: auto;
+                                    scrollbar-gutter: stable both-edges;
+                                ">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">
+                                                Pruebas realizadas
+                                            </th>
+                                            <th scope="col">
+                                                Precio
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+
+                                    <tbody>
+                                        @if (reciboSeleccionado.pruebas.Count > 0)
+                                        {
+                                            @foreach (var item in reciboSeleccionado.pruebas)
+                                            {
+                                                <tr>
+                                                    <td scope="row">@item.nombrePrueba</td>
+                                                    <td scope="row">@item.precio</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                                <div class="d-flex justify-content-end"><p><strong>TOTAL A REEMBOLSAR: @reciboSeleccionado.total</strong></p></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="d-flex mt-2 mb-3">
+                        <label class="mx-2 mt-1" for="razonr"><strong>Razón de reembolso:</strong></label>
+
+                        <EditForm Model=@reembolsoRequest OnValidSubmit="Reembolsar">
+                            <DataAnnotationsValidator />
+                            <div class="form-group">
+                                <InputText @bind-Value=reembolsoRequest.notaModificacion class="form-control mx-2 mt-1" id="Name" />
+                                <ValidationMessage For=@( () => reembolsoRequest.notaModificacion ) />
+                                <br />
+                                <input class="btn btn-primary btn-sm mx-2"
+                                       type="submit"
+                                       value="Reembolsar" />
+                            </div>
+                        </EditForm>
+
+                    </div>
+                }
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    ReciboBusquedaCancelacionDTO reciboBusqueda = new();
+    ReciboDTO reciboSeleccionado = null;
+    List<ReciboDTO> recibos = new();
+    ReembolsoRequest reembolsoRequest = new();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            recibos = await reciboService.ListarRecibos();
+        }
+        catch (Exception ex)
+        {
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = $"Ocurrio un error",
+                    Color = "DarkBlue",
+                    Html = $"<strong>Error: {ex.Message}</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+            return;
+        }
+    }
+
+
+    private async Task BuscarRecibo()
+    {
+        reciboSeleccionado = recibos.FirstOrDefault(r => r.idRecibo.ToString() == reciboBusqueda.NumeroRecibo);
+
+        if (reciboSeleccionado == null)
+        {
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Info ",
+                    Color = "DarkBlue",
+                    Html = $"<strong>No se encontro el recibo</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+            return;
+        }
+    }
+
+    private async Task Reembolsar()
+    {
+        if (reciboSeleccionado.idRecibo == 0)
+        {
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Error ",
+                    Color = "DarkRed",
+                    Html = $"<strong>Debes seleccionar al menos un servicio a facturar</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+            return;
+        }
+
+        if (reciboSeleccionado.estado != "Pendiente")
+        {
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Error ",
+                    Color = "DarkRed",
+                    Html = $"<strong>No se puede cancelar este recibo por que se encuentra en un estado de: {reciboSeleccionado.estado}</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 4000
+                });
+            return;
+        }
+
+        reembolsoRequest.IdRecibo = reciboSeleccionado.idRecibo.ToString();
+        bool seCancelo = await reciboService.Reembolsar(reembolsoRequest);
+
+        if (!seCancelo)
+        {
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Error ",
+                    Color = "DarkRed",
+                    Html = $"<strong>Ocurrio un error interno al intententar cancelar este recibo</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 4000
+                });
+            return;
+        }
+
+        if (seCancelo)
+        {
+            reciboSeleccionado = null;
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Operacion realizada con exito",
+                    Color = "DarkGreen",
+                    Html = $"<strong>Cancelacion exitosa</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Success,
+                    Timer = 2000
+                });
+            return;
+        }
+
+        await OnInitializedAsync();
+
+    }
+
+
+}

@@ -1,0 +1,11 @@
+﻿@using BlazorStrap.V5
+@using Microsoft.AspNetCore.Components.Authorization
+
+﻿<AuthorizeView>
+
+    <Authorized>
+        <span style="color: black">Bienvenido: <span class="fw-bold">@context.User.Identity.Name !</span></span>
+        <a href="Logout" title="Cerrar Sesion" class="sombraBoton" style="background-color: #760D01" ><BSButton style="color: white" class="oi oi-account-logout"> </BSButton></a>
+    </Authorized>
+
+</AuthorizeView>

@@ -1,0 +1,678 @@
+﻿@page "/mantenedorUsuario"
+
+@attribute [Authorize(Roles = $"{Roles.ADMINISTRADOR}")]
+
+@using BlazorStrap;
+@using CurrieTechnologies.Razor.SweetAlert2
+@using DTOs;
+@using LaboratorioBlazorUI.Auth
+@using LaboratorioBlazorUI.Servicios
+@using Microsoft.AspNetCore.Authorization
+@using global::DTOs
+@inject SweetAlertService Swal
+@inject IUsuarioServices UsuarioService
+
+<div class="container">
+    <div class="row d-flex justify-content-center">
+        <div class="col-sm-12 col-md-12 col-lg-10 col-xl-10 bg-white mt-3"
+             style="border-radius: 20px">
+            <div>
+                <div>
+                    <h5 class="text-center text-uppercase mt-2"
+                        style="
+                                    font-family: 'Courier New', Courier,
+                                        monospace;
+                                    font-weight: 600;
+                                ">
+                        Configuración de usuarios
+                    </h5>
+                </div>
+                <div class="container">
+                    <div class="row d-flex justify-content-start">
+                        <div class="d-flex col-sm-12 col-md-8 col-lg-8 col-xl-8 mt-3 mb-3">
+                            <div>
+                                <label class="mt-1 mx-1"
+                                       for="nombreUsuario">
+                                    <strong>Nombre (usuario)</strong>
+                                </label>
+                            </div>
+                            <div>
+                                <BSInput InputType="InputType.Text" placeholder="Busqueda" ValueChanged="async (string e) => await BuscarUsuario(e)" UpdateOnInput="true" Value="Busqueda" />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive text-nowrap">
+                    <table class="table table-fixed mx-auto"
+                           style="
+                                display: block;
+                                padding-right: 15px;
+                                min-height: 400px;
+                                height: 400px;
+                                overflow-y: auto;
+                                scrollbar-gutter: stable both-edges;
+                            ">
+                        <thead>
+                            <tr>
+                                <th class="text-center" scope="col">Opciones</th>
+                                <th class="text-center" scope="col">Cédula</th>
+                                <th class="text-center" scope="col">Nombre(s)</th>
+                                <th class="text-center" scope="col">Apellido(s)</th>
+                                <th class="text-center" scope="col">UserName</th>
+                                <th class="text-center" scope="col">Rol</th>
+                                <th class="text-center" scope="col">Telefono</th>
+                                <th class="text-center" scope="col">Email</th>
+                                <th class="text-center" scope="col">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (usuarios.Count() > 0)
+                            {
+                                foreach (var item in usuarios)
+                                {
+
+                                    @if (!string.IsNullOrEmpty(Busqueda))
+                                    {
+                                        @if (item.nombre != Busqueda)
+                                        {
+                                            if (!(item.nombre.Contains(Busqueda)))
+                                            {
+                                                continue;
+                                            }
+
+                                        }
+                                    }
+
+
+
+                                    <tr>
+                                        <td>
+                                            <input class="btn btn-primary btn-sm mx-1 mt-1"
+                                                   style="
+                                                padding: 0.2rem 0.4rem;
+                                                font-size: 0.7rem;
+                                            "
+                                                   type="button"
+                                                   value="Editar"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#editarUsuario"
+                                                   data-bs-whatever=""
+                                            @onclick="() => SeleccionarUsuarioEdicion(item.cedula)" />
+
+                                            @if (item.estado == "Inactivo")
+                                            {
+                                                <input class="btn btn-danger btn-sm mx-1 mt-1"
+                                                       style="
+                                                padding: 0.2rem 0.4rem;
+                                                font-size: 0.7rem;
+                                            "
+                                                       type="button"
+                                                       value="Inhabilitar"
+                                                       disabled
+                                                @onclick="() => EliminarUsuario(item.cedula)" />
+                                            }else
+                                            {
+                                                <input class="btn btn-danger btn-sm mx-1 mt-1"
+                                                       style="
+                                                padding: 0.2rem 0.4rem;
+                                                font-size: 0.7rem;
+                                            "
+                                                       type="button"
+                                                       value="Inhabilitar"
+                                                @onclick="() => EliminarUsuario(item.cedula)" />
+                                            }
+
+
+
+                                        </td>
+                                        <th scope="row">@item.cedula</th>
+                                        <td>@item.nombre</td>
+                                        <td>@item.apellido</td>
+                                        <td>@item.userName</td>
+                                        <td>@item.nombreRol</td>
+                                        <td>@item.telefono</td>
+                                        <td>@item.email</td>
+                                        <td>@item.estado</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="d-flex justify-content-end mb-2">
+                <input class="btn btn-success btn-sm mt-1 mb-1"
+                       type="button"
+                       value="Registrar Usuario"
+                       data-bs-toggle="modal"
+                       data-bs-target="#registrarUsuario"
+                       data-bs-whatever="" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade"
+     id="registrarUsuario"
+     tabindex="-1"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Nuevo Usuario
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="creacionUsuario" OnValidSubmit="CrearUsuario">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="usuario-nombre"
+                               class="col-form-label">
+                            Nombre(s):
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-nombre"
+                        @bind-value="creacionUsuario.nombre" />
+                        <ValidationMessage For=@( () => creacionUsuario.nombre ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-apellido"
+                               class="col-form-label">Apellido(s):</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-apellido"
+                        @bind-value="creacionUsuario.apellido" />
+
+                        <ValidationMessage For=@( () => creacionUsuario.apellido ) />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuario-nombre"
+                               class="col-form-label">
+                            Cedula:
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-nombre"
+                        @bind-value="creacionUsuario.cedula" />
+                        <ValidationMessage For=@( () => creacionUsuario.cedula ) />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuario-userName"
+                               class="col-form-label">Nombre de usuario:</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-userName"
+                        @bind-value="creacionUsuario.username" />
+
+                        <ValidationMessage For=@( () => creacionUsuario.username ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-contraseña"
+                               class="col-form-label">Contraseña:</label>
+                        <input type="password"
+                               class="form-control form-control-sm"
+                               id="usuario-contraseña"
+                        @bind-value="creacionUsuario.password" />
+
+                        <ValidationMessage For=@( () => creacionUsuario.password ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-rol"
+                               class="col-form-label">Rol:</label>
+
+                        <select class="form-control form-control-sm"
+                                id="usuario-rol"
+                        @bind="creacionUsuario.idRol">
+                            <option value="">(Seleccione el rol)</option>
+                            <option value="1">Usuario</option>
+                            <option value="2">Medico</option>
+                            <option value="3">Cajero</option>
+                            <option value="4">Administrador</option>
+                        </select>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-estado"
+                               class="col-form-label">Estado:</label>
+
+                        <select class="form-control form-control-sm"
+                                id="usuario-estado"
+                        @bind="creacionUsuario.estado">
+                            <option value="">(Seleccione el estado)</option>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-telefono"
+                               class="col-form-label">Teléfono:</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-telefono"
+                        @bind-value="creacionUsuario.telefono" />
+
+                        <ValidationMessage For=@( () => creacionUsuario.telefono ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-email"
+                               class="col-form-label">Email:</label>
+                        <input type="email"
+                               class="form-control form-control-sm"
+                               id="usuario-email"
+                        @bind-value="creacionUsuario.email" />
+
+                        <ValidationMessage For=@( () => creacionUsuario.email ) />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Crear usuario
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade"
+     id="editarUsuario"
+     tabindex="-1"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Editar usuario
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="edicionUsuario" OnValidSubmit="EditarUsuario">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="usuario-nombre"
+                               class="col-form-label">
+                            Nombre(s):
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-nombre"
+                        @bind-value="edicionUsuario.nombre" />
+                        <ValidationMessage For=@( () => edicionUsuario.nombre )/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-apellido"
+                               class="col-form-label">Apellido(s):</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-apellido"
+                        @bind-value="edicionUsuario.apellido" />
+                               
+                        <ValidationMessage For=@( () => edicionUsuario.apellido ) />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuario-nombre"
+                               class="col-form-label">
+                            Cedula:
+                        </label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-nombre"
+                        @bind-value="edicionUsuario.cedula" />
+                        <ValidationMessage For=@( () => edicionUsuario.cedula ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-userName"
+                               class="col-form-label">Nombre de usuario:</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-userName"
+                        @bind-value="edicionUsuario.userName" />
+                               
+                        <ValidationMessage For=@( () => edicionUsuario.userName ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-contraseña"
+                               class="col-form-label">Nueva Contraseña:</label>
+                        <input type="password"
+                               class="form-control form-control-sm"
+                               id="usuario-contraseña"
+                        @bind-value="edicionUsuario.password" />
+                                
+                        <ValidationMessage For=@( () => edicionUsuario.password ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-rol"
+                               class="col-form-label">Rol:</label>
+
+                        <select class="form-control form-control-sm"
+                                id="usuario-rol"
+                                @bind="edicionUsuario.rolId"
+                                >
+                            <option value="">(Seleccione el rol)</option>
+                            <option value="1">Usuario</option>
+                            <option value="2">Medico</option>
+                            <option value="3">Cajero</option>
+                            <option value="4">Administrador</option>
+                        </select>
+
+        
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-estado"
+                               class="col-form-label">Estado:</label>
+
+                        <select class="form-control form-control-sm"
+                                id="usuario-estado"
+                        @bind="edicionUsuario.estado">
+                            <option value="">(Seleccione el estado)</option>
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+
+
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-telefono"
+                               class="col-form-label">Teléfono:</label>
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               id="usuario-telefono"
+                        @bind-value="edicionUsuario.telefono" />
+                                
+                        <ValidationMessage For=@( () => edicionUsuario.telefono ) />
+                    </div>
+                    <div class="mb-3">
+                        <label for="usuario-email"
+                               class="col-form-label">Email:</label>
+                        <input type="email"
+                               class="form-control form-control-sm"
+                               id="usuario-email"
+                        @bind-value="edicionUsuario.email" />
+                                
+                        <ValidationMessage For=@( () => edicionUsuario.email ) />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Editar usuario
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+ 
+        </div>
+    </div>
+</div>
+
+
+@* No borrar esta parte, en caso de ser borrada no funcionaran los modals *@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+
+@code {
+    List<UsuarioDTO> usuarios = new();
+    UsuarioEdicionDTO edicionUsuario = new();
+    UsuarioCreacionDTO creacionUsuario = new();
+    string cedulaUsuarioABuscar;
+    UsuarioDTO usuarioBuscado = new();
+    string Busqueda = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarios = await UsuarioService.ObtenerUsuarios();
+    }
+
+
+
+    private void SeleccionarUsuarioEdicion(string cedula)
+    {
+        edicionUsuario = usuarios.Where(u => u.cedula == cedula).Select(u => new UsuarioEdicionDTO()
+            {
+                cedula = u.cedula,
+                nombre = u.nombre,
+                apellido = u.apellido,
+                rolId = roles.FirstOrDefault(r => r.NombreRol == u.nombreRol).IdRol,
+                email = u.email,
+                telefono = u.telefono,
+                userName = u.userName,
+                estado = u.estado
+            }).FirstOrDefault();
+    }
+
+    private async Task CrearUsuario()
+    {
+        try
+        {
+            var resultado = await UsuarioService.CrearUsuario(creacionUsuario);
+
+
+            if (resultado != null)
+            {
+                var confirmacion = await Swal.FireAsync(new SweetAlertOptions()
+                    {
+                        Title = "Confirma Crear usuario",
+                        Html = $"<strong>Seguro que quieres Crear el usuario?</strong>",
+                        Footer = "Confirmacion",
+                        Icon = SweetAlertIcon.Question,
+                        ShowConfirmButton = true,
+                        ShowCancelButton = true,
+                        ConfirmButtonText = "Si",
+                        ConfirmButtonColor = "green",
+                        CancelButtonText = "No",
+                        CancelButtonColor = "Red",
+                        Timer = 10000
+                    });
+
+                    if (confirmacion.IsConfirmed)
+                {
+
+                    creacionUsuario = new();
+                    await OnInitializedAsync();
+
+                    await Swal.FireAsync(new SweetAlertOptions()
+                        {
+                            Title = "Info",
+                            Color = "DarkGreen",
+                            Html = $"<strong>Se creo con exito</strong>",
+                            Toast = true,
+                            Icon = SweetAlertIcon.Success,
+                            Timer = 2000
+                        });
+                }
+
+            }
+        }
+        catch (Exception ex)
+        {
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Ocurrio un error",
+                    Color = "DarkGreen",
+                    Html = $"<strong>Error: {ex.Message}</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Error,
+                    Timer = 2000
+                });
+        }
+
+    }
+
+    private async Task BuscarUsuario(string nombreUsuario)
+    {
+
+        Busqueda = nombreUsuario;
+
+    }
+
+    private async Task EditarUsuario()
+    {
+        var resultado = await UsuarioService.Editar(edicionUsuario);
+
+        if (resultado)
+        {
+
+            var confirmacion = await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Confirma Eliminar usuario",
+                    Html = $"<strong>Seguro que quieres inhabilitar el usuario?</strong>",
+                    Footer = "Confirmacion",
+                    Icon = SweetAlertIcon.Question,
+                    ShowConfirmButton = true,
+                    ShowCancelButton = true,
+                    ConfirmButtonText = "Si",
+                    ConfirmButtonColor = "green",
+                    CancelButtonText = "No",
+                    CancelButtonColor = "Red",
+                    Timer = 10000
+                });
+
+            if (confirmacion.IsConfirmed)
+            {
+                edicionUsuario = new();
+                await OnInitializedAsync();
+
+                await Swal.FireAsync(new SweetAlertOptions()
+                    {
+                        Title = "Info",
+                        Color = "DarkGreen",
+                        Html = $"<strong>Se edito con exito</strong>",
+                        Toast = true,
+                        Icon = SweetAlertIcon.Success,
+                        Timer = 2000
+                    });
+            }
+
+        }
+
+    }
+
+    private async Task BuscarUsuario()
+    {
+
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "En desarrollo",
+                    Color = "DarkBlue",
+                    Html = $"<strong>Estamos trabajando en esta funcionalidad, pronto estara disponible</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+
+   
+    
+    }
+
+    private async Task EliminarUsuario(string cedula)
+    {
+        if (true)
+        {
+
+            var confirmacion = await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Confirma Inhabilitar usuario",
+                    Html = $"<strong>Seguro que quieres inhabilitar el usuario?</strong>",
+                    Footer = "Confirmacion",
+                    Icon = SweetAlertIcon.Question,
+                    ShowConfirmButton = true,
+                    ShowCancelButton = true,
+                    ConfirmButtonText = "Si",
+                    ConfirmButtonColor = "green",
+                    CancelButtonText = "No",
+                    CancelButtonColor = "Red",
+                    Timer = 10000
+                });
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Alerta",
+                    Color = "DarkBlue",
+                    Html = $"<strong>Para Inhabilitar un usuario hagalo desde el panel de edicion.</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+        }else
+        {
+
+            var resultado = await UsuarioService.Eliminar(cedula);
+            await OnInitializedAsync();
+
+            await Swal.FireAsync(new SweetAlertOptions()
+                {
+                    Title = "Info",
+                    Color = "DarkGreen",
+                    Html = $"<strong>Usuario Inabilitado.</strong>",
+                    Toast = true,
+                    Icon = SweetAlertIcon.Warning,
+                    Timer = 2000
+                });
+        }
+ 
+        
+
+
+        
+
+    }
+
+
+    List<RolObtencionDTO> roles = new()
+    {
+        new RolObtencionDTO()
+        {
+            IdRol =1,
+            NombreRol ="Usuario"
+        },
+               new RolObtencionDTO()
+        {
+            IdRol =2,
+            NombreRol ="Medico"
+        },
+               new RolObtencionDTO()
+        {
+            IdRol =3,
+            NombreRol ="Cajero"
+        },
+               new RolObtencionDTO()
+        {
+            IdRol =4,
+            NombreRol ="Administrador"
+        }
+    };
+}

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+	<PropertyGroup>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+	</PropertyGroup>
+
+	<ItemGroup>
+    <None Include="DTOs\.vs\DTOs\DesignTimeBuild\.dtbcache.v2" />
+    <None Include="DTOs\.vs\DTOs\FileContentIndex\a1231ddb-2134-4a78-8d37-309944471e01.vsidx" />
+    <None Include="DTOs\.vs\DTOs\v17\.futdcache.v2" />
+    <None Include="DTOs\.vs\DTOs\v17\.suo" />
+    <None Include="DTOs\DTOs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="2.0.0" />
+    <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
+    <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
+    <PackageReference Include="CurrieTechnologies.Razor.SweetAlert2" Version="5.5.0" />
+    <PackageReference Include="FontAwesome" Version="4.7.0" />
+    <PackageReference Include="Magick.NET.Core" Version="13.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.27" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.27" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.27" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Radzen.Blazor" Version="4.25.9" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\bin\Debug\net7.0\" />
+    <Folder Include="DTOs\obj\Debug\net7.0\refint\" />
+    <Folder Include="DTOs\obj\Debug\net7.0\ref\" />
+  </ItemGroup>
+
+</Project>
