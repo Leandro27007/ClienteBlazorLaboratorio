@@ -32,6 +32,7 @@ builder.Services.AddScoped<IReciboService, ReciboService>();
 builder.Services.AddScoped<IMedicoService, MedicoService>();
 builder.Services.AddScoped<IUsuarioServices, UsuarioService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<ResultadoService>();
 builder.Services.AddScoped<Alertas>();
 
 builder.Services.AddSweetAlert2();
