@@ -79,9 +79,9 @@
             </div>
 
 
-            <BSCard CardType="CardType.Card" style="width: 250px;">
-                <BSCard CardType="CardType.Image" src="https://pdf-temp-files.s3.us-west-2.amazonaws.com/J6XMBZ2LXIE1PIS4XX0DGNTTRAQSAWZV/file.png?X-Amz-Expires=3600&X-Amz-Security-Token=FwoGZXIvYXdzEM%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDFBSZLo5HLKa8l91eSKCAYhLVFqKZZGm3hAv8hRJL1SlVQfaPRRzJQBASrJySylDNre9s3%2FSpfe8li3jpELqjPHhT7i9oBGQqrAjlAi9G0OfJtsim%2FT4pZTc9BltDQ3GY2TO8JRMHQA2DHpFM9BowQ6vFJuTJMvUrkSrr4xxe0yRFFty4M%2B5QM46SZVTi14ERDso8c3drwYyKAEMhmWd1c52yHdOILAYp8LxdSw3T%2BwVo%2B4K7wZuzDk4sP9vXCNLh3U%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA4NRRSZPHGM2R4IO3/20240317/us-west-2/s3/aws4_request&X-Amz-Date=20240317T220241Z&X-Amz-SignedHeaders=host&X-Amz-Signature=5df3e840ff0c87d408c830cc47a5fc337a1a4633d2c7ca0b6817a3c5554bfb0c" alt="Card image cap" />
-
+            <BSCard CardType="CardType.Card" style="width:500px;">
+                <!--<BSCard CardType="CardType.Image" src="https://pdf-temp-files.s3.us-west-2.amazonaws.com/J6XMBZ2LXIE1PIS4XX0DGNTTRAQSAWZV/file.png?X-Amz-Expires=3600&X-Amz-Security-Token=FwoGZXIvYXdzEM%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDFBSZLo5HLKa8l91eSKCAYhLVFqKZZGm3hAv8hRJL1SlVQfaPRRzJQBASrJySylDNre9s3%2FSpfe8li3jpELqjPHhT7i9oBGQqrAjlAi9G0OfJtsim%2FT4pZTc9BltDQ3GY2TO8JRMHQA2DHpFM9BowQ6vFJuTJMvUrkSrr4xxe0yRFFty4M%2B5QM46SZVTi14ERDso8c3drwYyKAEMhmWd1c52yHdOILAYp8LxdSw3T%2BwVo%2B4K7wZuzDk4sP9vXCNLh3U%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA4NRRSZPHGM2R4IO3/20240317/us-west-2/s3/aws4_request&X-Amz-Date=20240317T220241Z&X-Amz-SignedHeaders=host&X-Amz-Signature=5df3e840ff0c87d408c830cc47a5fc337a1a4633d2c7ca0b6817a3c5554bfb0c" alt="Card image cap" />-->
+                <iframe width="300px" height="250" src="https://pub-bb695d5f0667442a887cb27931ea5d88.r2.dev/40213181072-61090"></iframe>
             </BSCard>
 
         </RadzenRow>
@@ -186,7 +186,7 @@
     private List<string> archivosBase64 = new List<string>();
     private string? TextValue { get; set; } = "Leandro Batista";
     private DestinatarioDTO destinatario = new();
-
+    private Stream file;
 
     async Task OnChange(InputFileChangeEventArgs e)
     {
@@ -198,7 +198,7 @@
             using var stream = item.OpenReadStream(tamañoMaximoArchivo);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
-
+            file = ms;
         }
 
     }
@@ -218,17 +218,31 @@
     private string _mensajeError;
 
 
-    private void OnSubmit(EditContext e)
+    private async Task OnSubmit(EditContext e)
     {
-        if (e.Validate())
+        try
         {
-            _message = "Submitted to database";
+            await this.resultadoService.SubirResultado(new ResultadoClinicoCreacionDTO()
+                {
+                    DocumentoIdentidadDestinatario = destinatario.Documento,
+                    ResultadoFileStream = this.file
+                });
+
+            await Swal.FireAsync("Exito!", "Subida con exito", SweetAlertIcon.Success);
         }
+        catch (Exception ex)
+        {
+
+            await Swal.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
+        }
+
+
+
     }
     public class BusquedaModel
     {
         [Required(ErrorMessage = "Indique el documento de identidad.")]
-        [RegularExpression(@"^\d{3}-\d{4}-\d{3}-\d{1}$", ErrorMessage = "Formato requerido: XXX-XXXX-XXX-X.")]
+        [RegularExpression(@"^\d{3}-\d{7}-\d{1}$", ErrorMessage = "Formato requerido: XXX-XXXXXXX-X.")]
         public string? DocumentoIdentidad { get; set; } = "";
     }
 

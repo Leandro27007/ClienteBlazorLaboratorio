@@ -53,15 +53,12 @@ namespace LaboratorioBlazorUI.Servicios
             }
         }
 
-        public async Task<UsuarioDTO> CrearUsuario(UsuarioCreacionDTO usuarioCreacion)
+        public async Task<ResultadoDTO> SubirResultado(ResultadoClinicoCreacionDTO usuarioCreacion)
         {
-
-
             try
             {
-
                 // Construye la URL completa para la solicitud POST
-                string apiUrl = $"{_Url}CrearUsuario";
+                string apiUrl = $"{_Url}SubirResultado";
 
                 // Serializa el objeto CreacionPruebaLabDTO a JSON
                 var jsonContent = JsonConvert.SerializeObject(usuarioCreacion);
@@ -76,14 +73,14 @@ namespace LaboratorioBlazorUI.Servicios
                 {
                     // Lee el contenido de la respuesta y deserialízalo en un objeto PruebaLab
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var usuario = JsonConvert.DeserializeObject<UsuarioDTO>(responseContent);
-                    return usuario;
+                    var result = JsonConvert.DeserializeObject<ResultadoDTO>(responseContent);
+                    return result;
                 }
                 else
                 {
                     // Si la respuesta no es exitosa, maneja el error según tus necesidades
                     // Puedes lanzar una excepción, registrar el error, o tomar otra acción.
-                    throw new Exception($"Error al crear el usuario. Estado de respuesta: {response.StatusCode}");
+                    throw new Exception($"Error al subir el resultado clinico. Estado de respuesta: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
