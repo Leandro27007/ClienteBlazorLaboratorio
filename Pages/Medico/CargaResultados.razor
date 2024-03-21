@@ -20,7 +20,7 @@
 
         <RadzenRow>
 
-           <!--INPUT FILE LOAD-->
+            <!--INPUT FILE LOAD-->
             <div>
 
                 <RadzenCard>
@@ -76,23 +76,28 @@
 
                 </style>
 
+
             </div>
 
+            @if (!string.IsNullOrEmpty(imagenPDF))
+            {
+                <BSCard CardType="CardType.Card">
+                    <!--<BSCard CardType="CardType.Image" src="https://pdf-temp-files.s3.us-west-2.amazonaws.com/J6XMBZ2LXIE1PIS4XX0DGNTTRAQSAWZV/file.png?X-Amz-Expires=3600&X-Amz-Security-Token=FwoGZXIvYXdzEM%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDFBSZLo5HLKa8l91eSKCAYhLVFqKZZGm3hAv8hRJL1SlVQfaPRRzJQBASrJySylDNre9s3%2FSpfe8li3jpELqjPHhT7i9oBGQqrAjlAi9G0OfJtsim%2FT4pZTc9BltDQ3GY2TO8JRMHQA2DHpFM9BowQ6vFJuTJMvUrkSrr4xxe0yRFFty4M%2B5QM46SZVTi14ERDso8c3drwYyKAEMhmWd1c52yHdOILAYp8LxdSw3T%2BwVo%2B4K7wZuzDk4sP9vXCNLh3U%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA4NRRSZPHGM2R4IO3/20240317/us-west-2/s3/aws4_request&X-Amz-Date=20240317T220241Z&X-Amz-SignedHeaders=host&X-Amz-Signature=5df3e840ff0c87d408c830cc47a5fc337a1a4633d2c7ca0b6817a3c5554bfb0c" alt="Card image cap" />-->
+                    <img width="250px" height="250" src="@imagenPDF">
+                </BSCard>
 
-            <BSCard CardType="CardType.Card" style="width:500px;">
-                <!--<BSCard CardType="CardType.Image" src="https://pdf-temp-files.s3.us-west-2.amazonaws.com/J6XMBZ2LXIE1PIS4XX0DGNTTRAQSAWZV/file.png?X-Amz-Expires=3600&X-Amz-Security-Token=FwoGZXIvYXdzEM%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDFBSZLo5HLKa8l91eSKCAYhLVFqKZZGm3hAv8hRJL1SlVQfaPRRzJQBASrJySylDNre9s3%2FSpfe8li3jpELqjPHhT7i9oBGQqrAjlAi9G0OfJtsim%2FT4pZTc9BltDQ3GY2TO8JRMHQA2DHpFM9BowQ6vFJuTJMvUrkSrr4xxe0yRFFty4M%2B5QM46SZVTi14ERDso8c3drwYyKAEMhmWd1c52yHdOILAYp8LxdSw3T%2BwVo%2B4K7wZuzDk4sP9vXCNLh3U%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIA4NRRSZPHGM2R4IO3/20240317/us-west-2/s3/aws4_request&X-Amz-Date=20240317T220241Z&X-Amz-SignedHeaders=host&X-Amz-Signature=5df3e840ff0c87d408c830cc47a5fc337a1a4633d2c7ca0b6817a3c5554bfb0c" alt="Card image cap" />-->
-                <iframe width="300px" height="250" src="https://pub-bb695d5f0667442a887cb27931ea5d88.r2.dev/40213181072-61090"></iframe>
-            </BSCard>
+            }
+
 
         </RadzenRow>
 
-       
+
 
     </RadzenColumn>
     <RadzenColumn Size="8" class="rz-background-color-info-lighter rz-color-on-info-lighter rz-p-1 rz-p-md-1">
-      
 
-            <RadzenRow>
+
+        <RadzenRow>
             <div Class="rz-p-0 rz-p-md-12">
                 <BSForm Model="busquedaModel" IsRow="true" Gutters="Gutters.Medium" OnValidSubmit="BuscarDestinatario" OnReset="OnReset">
 
@@ -172,8 +177,8 @@
 
             </div>
 
-            </RadzenRow>
-       
+        </RadzenRow>
+
     </RadzenColumn>
     <RadzenColumn Size="12" class="rz-background-color-info-lighter rz-color-on-info-lighter rz-p-2 rz-p-md-5">
 
@@ -184,25 +189,33 @@
 @code {
     private const int tamañoMaximoArchivo = 2 * 1024 * 1027;
     private List<string> archivosBase64 = new List<string>();
-    private string? TextValue { get; set; } = "Leandro Batista";
     private DestinatarioDTO destinatario = new();
     private IBrowserFile file;
+    private string imagenPDF = "";
 
     async Task OnChange(InputFileChangeEventArgs e)
     {
-        Console.WriteLine("CAMBIO");
-        Console.WriteLine(e.File);
 
-        file = e.File;
-
-        foreach (var item in e.GetMultipleFiles())
+        try
         {
-           // using var stream = item.OpenReadStream(tamañoMaximoArchivo);
+            if (!(e.File.ContentType.ToUpper().Contains("PDF")))
+                throw new Exception("Solo se permiten documentos PDF/EXCEL.");
 
+            if (e.File == null)
+                return;
 
+            file = e.File;
 
-            //file = stream;
+            //Llamada a api para convertir el PDF a Imagen.
+            var IMG = await this.resultadoService.PdfToImage(file);
+
+            imagenPDF = IMG.urls.FirstOrDefault();
         }
+        catch (Exception ex)
+        {
+            await Swal.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
+        }
+
 
     }
 
@@ -225,11 +238,13 @@
     {
         try
         {
+
             await this.resultadoService.SubirResultado(new ResultadoClinicoCreacionDTO()
                 {
                     DocumentoIdentidadDestinatario = destinatario.Documento,
                     resultadoFile = this.file
                 });
+
 
             await Swal.FireAsync("Exito!", "Subida con exito", SweetAlertIcon.Success);
         }
@@ -239,9 +254,8 @@
             await Swal.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
         }
 
-
-
     }
+
     public class BusquedaModel
     {
         [Required(ErrorMessage = "Indique el documento de identidad.")]

@@ -41,6 +41,6 @@ builder.Services.AddBlazorBootstrap();
 builder.Services.AddBlazorStrap();
 
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7290/api/") });
+builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7290/api/") });
 
 await builder.Build().RunAsync();
