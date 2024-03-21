@@ -186,19 +186,22 @@
     private List<string> archivosBase64 = new List<string>();
     private string? TextValue { get; set; } = "Leandro Batista";
     private DestinatarioDTO destinatario = new();
-    private Stream file;
+    private IBrowserFile file;
 
     async Task OnChange(InputFileChangeEventArgs e)
     {
         Console.WriteLine("CAMBIO");
         Console.WriteLine(e.File);
 
+        file = e.File;
+
         foreach (var item in e.GetMultipleFiles())
         {
-            using var stream = item.OpenReadStream(tamañoMaximoArchivo);
-            using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            file = ms;
+           // using var stream = item.OpenReadStream(tamañoMaximoArchivo);
+
+
+
+            //file = stream;
         }
 
     }
@@ -225,7 +228,7 @@
             await this.resultadoService.SubirResultado(new ResultadoClinicoCreacionDTO()
                 {
                     DocumentoIdentidadDestinatario = destinatario.Documento,
-                    ResultadoFileStream = this.file
+                    resultadoFile = this.file
                 });
 
             await Swal.FireAsync("Exito!", "Subida con exito", SweetAlertIcon.Success);

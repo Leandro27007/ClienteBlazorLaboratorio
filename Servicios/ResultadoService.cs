@@ -2,6 +2,9 @@
 using DTOs.ResultadoClinicoDTOs;
 using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
+using System.IO;
+using System.Net.Http.Json;
+using System.Net.Mime;
 using System.Text;
 
 namespace LaboratorioBlazorUI.Servicios
@@ -53,7 +56,7 @@ namespace LaboratorioBlazorUI.Servicios
             }
         }
 
-        public async Task<ResultadoDTO> SubirResultado(ResultadoClinicoCreacionDTO usuarioCreacion)
+        public async Task<ResultadoDTO> SubirResultado(ResultadoClinicoCreacionDTO resultadoClinico)
         {
             try
             {
@@ -61,13 +64,16 @@ namespace LaboratorioBlazorUI.Servicios
                 string apiUrl = $"{_Url}SubirResultado";
 
                 // Serializa el objeto CreacionPruebaLabDTO a JSON
-                var jsonContent = JsonConvert.SerializeObject(usuarioCreacion);
+                //  var jsonContent = JsonConvert.SerializeObject(usuarioCreacion);
 
                 // Configura el contenido de la solicitud
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                // var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var content = new MultipartFormDataContent();
+                content.Add(new StreamContent(resultadoClinico.resultadoFile.OpenReadStream(maxAllowedSize:5000000)), "file", resultadoClinico.resultadoFile.Name);
 
+                content.Add(new StringContent("contenido"), "ContentType");
                 // Realiza la solicitud POST
-                var response = await _client.PostAsync(apiUrl, content);
+                var response = await _client.PostAsync(apiUrl + "?documentoIdentidadDestinatario=" + resultadoClinico.DocumentoIdentidadDestinatario, content);
 
                 if (response.IsSuccessStatusCode)
                 {
