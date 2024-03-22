@@ -18,11 +18,11 @@
 
 
 <AuthorizeView Roles="Administrador">
-    <RadzenPanelMenuItem Text="Usuarios" Path="mantenedorUsuario" Icon="account_box" />
+    <RadzenPanelMenuItem Text="Usuarios" Path="mantenedorUsuario" Icon="people" />
 </AuthorizeView>
 
 <AuthorizeView Roles="Usuario,Administrador">
-    <RadzenPanelMenuItem Text="Seleccion de analisis" Path="menuSeleccionPruebas" Icon="account_box" />
+    <RadzenPanelMenuItem Text="Seleccion de analisis" Path="menuSeleccionPruebas" Icon="pan_tool_alt" />
 </AuthorizeView>
 
 
@@ -30,7 +30,7 @@
 <AuthorizeView Roles="Medico,Administrador">
     <Authorized>
 
-        <RadzenPanelMenuItem Text="Pacientes" Path="menuMedicoAtender" Icon="account_box" />
+        <RadzenPanelMenuItem Text="Pacientes" Path="menuMedicoAtender" Icon="accessible_forward" />
 
         <RadzenPanelMenuItem Text="Subir Resultados" Path="resultadoSubida" Icon="backup" />
 
@@ -40,8 +40,8 @@
 <AuthorizeView Roles="Cajero,Administrador">
     <Authorized>
 
-        <RadzenPanelMenuItem Text="Facturacion" Path="menuFacturacion" Icon="account_box" />
-        <RadzenPanelMenuItem Text="Reembolso" Path="reembolso" Icon="account_box" />
+        <RadzenPanelMenuItem Text="Facturacion" Path="menuFacturacion" Icon="receipt_long" />
+        <RadzenPanelMenuItem Text="Reembolso" Path="reembolso" Icon="currency_exchange" />
 
     </Authorized>
 </AuthorizeView>
