@@ -1,10 +1,12 @@
 @page "/menuFacturacion"
 @using CurrieTechnologies.Razor.SweetAlert2;
+@using LaboratorioBlazorUI.DTOs
 @using LaboratorioBlazorUI.Modelos;
 @using LaboratorioBlazorUI.Modelos.Request;
 @using LaboratorioBlazorUI.Servicios;
 @using LaboratorioBlazorUI;
 
+@inject IPacienteService pacienteService
 @inject ITurnoServices turnoService
 @inject IPruebaLabService pruebaLabService
 @inject IReciboService reciboService
@@ -40,10 +42,21 @@
                                 <DataAnnotationsValidator />
                                 <div class="form-group">
                                     <div>
+                                        <label for="cedula">Documento Identidad</label>
+                                    </div>
+                                    <div>
+                                        <InputText style="border-width: 1px;" @bind-Value=DocumentoIdentidad  class="form-control-sm" id="Name" />
+                                        <ValidationMessage For=@( () => cliente.cedula ) />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div>
                                         <label for="nombre">Nombre</label>
                                     </div>
                                     <div>
-                                        <InputText style="border-width: 1px;" @bind-Value=cliente.nombreCliente class="form-control-sm" id="Name" />
+                                        <InputText style="border-width: 1px;" @bind-Value=cliente.nombreCliente disabled="@{
+                                            paciente!=null? true:false
+}" class="form-control-sm" id="Name" />
                                         <ValidationMessage For=@( () => cliente.nombreCliente ) />
                                     </div>
                                 </div>
@@ -53,7 +66,9 @@
                                         <label for="apellido">Apellido</label>
                                     </div>
                                     <div>
-                                        <InputText style="border-width: 1px;" @bind-Value=cliente.apellidoCliente class="form-control-sm" id="Name" />
+                                        <InputText style="border-width: 1px;" @bind-Value=cliente.apellidoCliente disabled="@{
+                                            paciente!=null? true:false
+}" class="form-control-sm" id="Name" />
                                         <ValidationMessage For=@( () => cliente.apellidoCliente ) />
                                     </div>
                                 </div>
@@ -62,25 +77,21 @@
                                         <label for="telefono">Teléfono</label>
                                     </div>
                                     <div>
-                                        <InputText style="border-width: 1px;" @bind-Value=cliente.telefono class="form-control-sm" id="Name" />
+                                        <InputText style="border-width: 1px;" @bind-Value=cliente.telefono disabled="@{
+                                            paciente!=null? true:false
+}" class="form-control-sm" id="Name" />
                                         <ValidationMessage For=@( () => cliente.telefono ) />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <div>
-                                        <label for="cedula">Cédula</label>
-                                    </div>
-                                    <div>
-                                        <InputText style="border-width: 1px;" @bind-Value=cliente.cedula class="form-control-sm" id="Name" />
-                                        <ValidationMessage For=@( () => cliente.cedula ) />
-                                    </div>
-                                </div>
+
                                 <div class="form-group">
                                     <div>
                                         <label for="email">Email</label>
                                     </div>
                                     <div>
-                                        <InputText style="border-width: 1px;" @bind-Value=cliente.email class="form-control-sm" id="Name" />
+                                        <InputText style="border-width: 1px;" @bind-Value=cliente.email disabled="@{
+                                            paciente!=null? true:false
+}" class="form-control-sm" id="Name" />
                                         <ValidationMessage For=@( () => cliente.email ) />
                                     </div>
                                 </div>
@@ -90,7 +101,7 @@
                                            type="button"
                                            value="Limpiar"
                                            ps-2
-                                    @onclick="LimpiarItems" />
+                                           @onclick="LimpiarItems" />
 
                                     <input class="btn btn-success btn mx-1 mt-1 mb-1"
                                            type="submit"
@@ -116,7 +127,7 @@
                                         {
                                             <li>
                                                 <a class="dropdown-item"
-                                                @onclick="() => AgregarItem(id:item.idPruebaLab, nombrePrueba: item.nombrePrueba, precio:item.precio)">
+                                                   @onclick="() => AgregarItem(id:item.idPruebaLab, nombrePrueba: item.nombrePrueba, precio:item.precio)">
                                                     @item.nombrePrueba
                                                 </a>
                                             </li>
@@ -175,8 +186,8 @@
                                                        style="
                                                         padding: 0.2rem 0.4rem;
                                                         font-size: 0.7rem;
-                                                    "
-                                                @onclick="() => AgregarItem(id:item.idPruebaLab, nombrePrueba: item.nombrePrueba, precio:item.precio)"
+                                                                    "
+                                                       @onclick="() => AgregarItem(id:item.idPruebaLab, nombrePrueba: item.nombrePrueba, precio:item.precio)"
                                                        type="button"
                                                        value="Quitar" />
                                             </td>
@@ -236,25 +247,25 @@
                                 <tr>
                                     <th scope="row">@item.idTurno</th>
                                     <td>
-                                        
+
 
                                         <input class="btn btn-primary btn-sm mx-1 mt-1"
                                                style="
                                                 padding: 0.2rem 0.4rem;
                                                 font-size: 0.7rem;
-                                            "
+                                                            "
                                                type="button"
                                                value="Visualizar"
-                                        @onclick="() => CargarPruebasDelTurnoParaFacturar(item.pruebasLab, item.idTurno)" />
+                                               @onclick="() => CargarPruebasDelTurnoParaFacturar(item.pruebasLab, item.idTurno)" />
 
                                         <input class="btn btn-danger btn-sm mx-1 mt-1"
                                                style="
                                                 padding: 0.2rem 0.4rem;
                                                 font-size: 0.7rem;
-                                            "
+                                                            "
                                                type="button"
                                                value="Cancelar"
-                                        @onclick="() => CancelarTurno(item.idTurno)" />
+                                               @onclick="() => CancelarTurno(item.idTurno)" />
                                     </td>
                                 </tr>
                             }
@@ -295,11 +306,64 @@
     List<PruebaLab> PruebasLab = new();
     List<PruebaLab> PruebasSeleccionadas = new List<PruebaLab>();
     ReciboRequest cliente = new();
+    PacienteObtencionDTO paciente;
     string idTurnoSeleccionado;
+
+    private string documentoIdentidad;
+
+    public string DocumentoIdentidad
+    {
+        get { return documentoIdentidad; }
+        set
+        {
+            documentoIdentidad = value;
+            cliente.cedula = value;
+            BuscarCliente(documentoIdentidad);
+
+        }
+    }
+
 
     bool estaCargando = false;
 
     decimal? Total = 0.0m;
+
+    private async Task BuscarCliente(string valor)
+    {
+        PacienteObtencionDTO result = await pacienteService.BuscarPaciente(valor);
+
+        if (!string.IsNullOrEmpty(result.Documento))
+        {
+            paciente = result;
+
+        }else
+        {
+            cliente = new();
+            paciente = null;
+        }
+
+        if (paciente != null && !string.IsNullOrEmpty(paciente.Documento))
+        {
+         
+            cliente = new()
+                {
+                    nombreCliente = paciente.Nombre,
+                    apellidoCliente = paciente.Apellido,
+                    cedula = paciente.Documento,
+                    email = paciente.Email,
+                    telefono = paciente.Telefono,
+
+                };
+        }else
+        {
+            paciente = null;
+
+        }
+
+        StateHasChanged();
+
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -465,6 +529,7 @@
         cliente = new();
         idTurnoSeleccionado = null;
 
+        paciente = null;
 
         return Task.CompletedTask;
     }
@@ -522,37 +587,37 @@
         }
     }
 
-   /* private async Task AtenderTurno(string id)
-    {
-        string resultado = await turnoService.AtenderTurno(id);
+    /* private async Task AtenderTurno(string id)
+         {
+         string resultado = await turnoService.AtenderTurno(id);
 
-        if (resultado == "true")
-        {
-            await Swal.FireAsync(new SweetAlertOptions()
-                {
-                    Title = "Turno atendido exitosamente",
-                    Color = "DarkGreen",
-                    Html = $"<strong>Turno numero: {id}</strong>",
-                    Toast = true,
-                    Icon = SweetAlertIcon.Success,
-                    ShowConfirmButton = true,
-                    Timer = 10000
-                });
+         if (resultado == "true")
+             {
+             await Swal.FireAsync(new SweetAlertOptions()
+                     {
+                     Title = "Turno atendido exitosamente",
+                     Color = "DarkGreen",
+                     Html = $"<strong>Turno numero: {id}</strong>",
+                     Toast = true,
+                     Icon = SweetAlertIcon.Success,
+                     ShowConfirmButton = true,
+             Timer = 10000
+             });
 
-            var turnoParaQuitar = TurnosPendientes.FirstOrDefault(t => t.idTurno == id);
-            TurnosPendientes.Remove(turnoParaQuitar);
-        }
-        else
-        {
-            await Swal.FireAsync(new SweetAlertOptions()
-                {
-                    Title = "Error",
-                    Html = $"<strong>{resultado}</strong>",
-                    Icon = SweetAlertIcon.Error,
-                    ShowConfirmButton = true,
-                    Timer = 10000
-                });
-        }
+             var turnoParaQuitar = TurnosPendientes.FirstOrDefault(t => t.idTurno == id);
+             TurnosPendientes.Remove(turnoParaQuitar);
+         }
+             else
+             {
+             await Swal.FireAsync(new SweetAlertOptions()
+                     {
+                     Title = "Error",
+                     Html = $"<strong>{resultado}</strong>",
+                     Icon = SweetAlertIcon.Error,
+                     ShowConfirmButton = true,
+         Timer = 10000
+             });
+                 }
     }*/
 
 

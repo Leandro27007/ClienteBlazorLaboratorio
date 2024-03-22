@@ -16,7 +16,7 @@ namespace LaboratorioBlazorUI.Modelos.Request
         public string telefono { get; set; }
         [EmailAddress(ErrorMessage ="El correo no parece ser correcto.")]
         public string email { get; set; }
-        [RegularExpression(@"^\d{11,11}$", ErrorMessage = "La cedulo debe contener 11 dígitos.")]
+        [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Solo se permiten letras y numeros.")]
         public string cedula { get; set; }
         public List<PruebaLab> pruebas { get; set; }
     }
