@@ -71,7 +71,6 @@ namespace LaboratorioBlazorUI.Servicios
 
 
         }
-
         public async Task<string> CancelarTurno(string turnoId)
         {
 
@@ -83,6 +82,40 @@ namespace LaboratorioBlazorUI.Servicios
 
                 // Construye la URL completa del endpoint
                 string endpointUrl = _Url + "CancelarTurno?TurnoId=" + turnoId;
+
+                // Realiza la solicitud HTTP PUT
+                var response = await _client.PutAsync(endpointUrl, null);
+                // Lee el contenido de la respuesta como una cadena
+                string responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Devuelve la respuesta deserializada como una cadena
+                    return responseContent;
+                }
+                else
+                {
+                    return responseContent;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return ex.Message;
+            }
+
+        }
+        public async Task<string> AtenderTurno(string turnoId)
+        {
+
+
+            try
+            {
+
+
+
+                // Construye la URL completa del endpoint
+                string endpointUrl = _Url + "AtenderTurno?TurnoId=" + turnoId;
 
                 // Realiza la solicitud HTTP PUT
                 var response = await _client.PutAsync(endpointUrl, null);

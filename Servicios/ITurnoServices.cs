@@ -8,5 +8,6 @@ namespace LaboratorioBlazorUI.Servicios
         Task<List<Turno>> GetTurnos();
         Task<string> GenerarTurno(GenerarTurnoRequest turno);
         Task<string> CancelarTurno(string idTurno);
+        Task<string> AtenderTurno(string turnoId);
     }
 }

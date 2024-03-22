@@ -13,7 +13,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-sm-12 col-md-8 col-lg-8 col-xl-8 bg white"
+        <div class="col-sm-12 col-md-9 col-lg-9 col-xl-9 bg white"
              style="border-radius: 10px">
             <div class="container">
                 <div class="row">
@@ -205,7 +205,7 @@
 
 
 
-        <div class="col-sm-12 col-md-4 col-lg-4 col-xl-4 mt-3"
+        <div class="col-sm-12 col-md-3 col-lg-3 col-xl-3 mt-3"
              style="border-radius: 10px; background-color:#162d43ff">
             <div>
                 <div>
@@ -236,15 +236,7 @@
                                 <tr>
                                     <th scope="row">@item.idTurno</th>
                                     <td>
-                                        <input class="btn btn-success btn-sm mx-1 mt-1"
-                                               style="
-                                                padding: 0.2rem 0.4rem;
-                                                font-size: 0.7rem;
-                                            "
-                                               type="button"
-                                               value="Atender"
-                                        @onclick="() => AtenderTurno(item.idTurno)" />
-
+                                        
 
                                         <input class="btn btn-primary btn-sm mx-1 mt-1"
                                                style="
@@ -252,7 +244,7 @@
                                                 font-size: 0.7rem;
                                             "
                                                type="button"
-                                               value="Ver"
+                                               value="Visualizar"
                                         @onclick="() => CargarPruebasDelTurnoParaFacturar(item.pruebasLab, item.idTurno)" />
 
                                         <input class="btn btn-danger btn-sm mx-1 mt-1"
@@ -373,6 +365,7 @@
                 {
                     var resultado = await reciboService.GenerarRecibo(cliente);
 
+                    await turnoService.AtenderTurno(idTurnoSeleccionado);
 
                     var alerta = await Swal.FireAsync(new SweetAlertOptions()
                         {
@@ -529,9 +522,9 @@
         }
     }
 
-    private async Task AtenderTurno(string id)
+   /* private async Task AtenderTurno(string id)
     {
-        string resultado = await turnoService.CancelarTurno(id);
+        string resultado = await turnoService.AtenderTurno(id);
 
         if (resultado == "true")
         {
@@ -560,7 +553,7 @@
                     Timer = 10000
                 });
         }
-    }
+    }*/
 
 
 }
